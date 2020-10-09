@@ -45,7 +45,11 @@ def getDataForSubject(dirP, folderN) :
     # code
     print("######################################")
     print("Starting subject " + folderN)
-    
+    for i in range(1,14) :
+        if i < 10 :
+            i = "0" + str(i)
+        fileN =  folderN + "R" + i + ".edf"
+        iterDaAr = getDataForFile(dirP, folderN, fileN)
 
 def getData(dirP) :
     #code
