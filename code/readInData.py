@@ -16,9 +16,9 @@ os.getcwd()
 
 #os.chdir("/Users/jk8sd/Box Sync/Practice")
 
-dirPath = "make this your direcotry"
-folderName = "S001/"
-fileName = "S001R04.edf"
+url = "https://github.com/VIXSoh/SRM/raw/master/data/
+#folderName = "S001/"
+#fileName = "S001R04.edf"
 
 # turn into xarray object
 def convertToXarray(file) :
@@ -28,7 +28,8 @@ def convertToXarray(file) :
 def getDataForFile(dirP, folderN, fileN) :
     filePath = dirP + folderN + fileN
     print("Getting file for " + folderN + ", file : " + fileN)
-    raw = mne.io.read_raw_edf(filePath)
+    edf = wget.download(filePath)
+    raw = mne.io.read_raw_edf(edf)
     ev = mne.events_from_annotations(raw)
     da = xr.DataArray(
     ev[0],
@@ -53,6 +54,7 @@ def getDataForSubject(dirP, folderN) :
 
 def getData(dirP) :
     #code
+
 
 
 
