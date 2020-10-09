@@ -2,7 +2,7 @@
 """
 Created on Fri Oct  9 11:57:42 2020
 
-@author: joony
+@author: SRM TEAM
 """
 
 import pandas as pd
@@ -16,7 +16,7 @@ os.getcwd()
 
 #os.chdir("/Users/jk8sd/Box Sync/Practice")
 
-dirPath = "C:/Users/joony/Documents/myGit/CAPSTONE/SRM/data/"
+dirPath = "make this your direcotry"
 folderName = "S001/"
 fileName = "S001R04.edf"
 
@@ -45,22 +45,11 @@ def getDataForSubject(dirP, folderN) :
     # code
     print("######################################")
     print("Starting subject " + folderN)
+    
 
 def getData(dirP) :
     #code
 
-
-shape = raw.get_data().shape
-print(shape)
-
-samp_freq = raw.info['sfreq']
-nyq = samp_freq / 2
-print(nyq)
-
-shape[1] / (samp_freq)
-
-ev = mne.events_from_annotations(raw)
-print(ev[1])
 
 
 
