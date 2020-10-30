@@ -10,13 +10,13 @@ import numpy as np
 import mne
 import os
 import xarray as xr
-
+import wget
 
 os.getcwd()
 
 #os.chdir("/Users/jk8sd/Box Sync/Practice")
 
-url = "https://github.com/VIXSoh/SRM/raw/master/data/
+url = "https://github.com/VIXSoh/SRM/raw/master/data/"
 #folderName = "S001/"
 #fileName = "S001R04.edf"
 
@@ -54,7 +54,6 @@ def getDataForSubject(dirP, folderN) :
 
 def getData(dirP) :
     #code
-
 
 
 
