@@ -89,10 +89,11 @@ class RSRM(BaseEstimator, TransformerMixin):
         This is a single node version.
     """
 
-    def __init__(self, n_iter=10, features=50, gamma=1.0, rand_seed=0):
+    def __init__(self, n_iter=10, features=50, gamma=1.0, tol=1e-3, rand_seed=0):
         self.n_iter = n_iter
         self.features = features
-        self.lam = gamma
+        self.gamma = gamma
+        self.tol = tol
         self.rand_seed = rand_seed
 
     def fit(self, X):
@@ -105,7 +106,7 @@ class RSRM(BaseEstimator, TransformerMixin):
         logger.info('Starting RSRM')
 
         # Check that the regularizer value is positive
-        if 0.0 >= self.lam:
+        if 0.0 >= self.gamma:
             raise ValueError("Gamma parameter should be positive.")
 
         # Check the number of subjects
@@ -187,7 +188,7 @@ class RSRM(BaseEstimator, TransformerMixin):
         R = None
         for i in range(self.n_iter):
             R = self.w_[subject].T.dot(X - S)
-            S = self._shrink(X - self.w_[subject].dot(R), self.lam)
+            S = self._shrink(X - self.w_[subject].dot(R), self.gamma)
         return R, S
 
     def transform_subject(self, X):
@@ -215,7 +216,7 @@ class RSRM(BaseEstimator, TransformerMixin):
         s = np.zeros_like(X)
         for i in range(self.n_iter):
             w = self._update_transform_subject(X, s, self.r_)
-            s = self._shrink(X - w.dot(self.r_), self.lam)
+            s = self._shrink(X - w.dot(self.r_), self.gamma)
 
         return w, s
 
@@ -246,18 +247,30 @@ class RSRM(BaseEstimator, TransformerMixin):
         R = self._update_shared_response(X, S, W, features)
 
         if logger.isEnabledFor(logging.INFO):
-            objective = self._objective_function(X, W, R, S, self.lam)
+            objective = self._objective_function(X, W, R, S, self.gamma)
             logger.info('Objective function %f' % objective)
 
         # Main loop
-        for i in range(self.n_iter):
+        delta = 1.
+        loss_func = 1.
+        i = 0
+        while delta > self.tol and i < self.n_iter:
+        #for i in range(self.n_iter):
+            old_loss = loss_func
             W = self._update_transforms(X, S, R)
-            S = self._update_individual(X, W, R, self.lam)
+            S = self._update_individual(X, W, R, self.gamma)
             R = self._update_shared_response(X, S, W, features)
+            loss_func = self._objective_function(X, W, R, S, self.gamma)
+            # Update convergence test and counter
+            delta = min(delta, np.abs(loss_func - old_loss))
+            i += 1
             # Print objective function every iteration
-            if logger.isEnabledFor(logging.INFO):
-                objective = self._objective_function(X, W, R, S, self.lam)
-                logger.info('Objective function %f' % objective)
+            print(f'Iteration Number: {i}; \
+            Delta: {delta}; \
+            Objective function: {self._objective_function(X, W, R, S, self.gamma)}')
+            #if logger.isEnabledFor(logging.INFO):
+            #    objective = self._objective_function(X, W, R, S, self.gamma)
+            #    logger.info('Objective function %f' % objective)
 
         return W, R, S
 
@@ -289,7 +302,7 @@ class RSRM(BaseEstimator, TransformerMixin):
         # Draw a random W for each subject
         W = [random_state.random_sample((voxels[i], features))
              for i in range(subjs)]
-        # Make it orthogonal with QR decomposition
+        # Make it orthogonal it with QR decomposition
         for i in range(subjs):
             W[i], _ = np.linalg.qr(W[i])
 
@@ -323,7 +336,8 @@ class RSRM(BaseEstimator, TransformerMixin):
         subjs = len(X)
         func = .0
         for i in range(subjs):
-            func += 0.5 * np.sum((X[i] - W[i].dot(R) - S[i])**2)                     + gamma * np.sum(np.abs(S[i]))
+            func += 0.5 * np.sum((X[i] - W[i].dot(R) - S[i])**2) \
+                    + gamma * np.sum(np.abs(S[i]))
         return func
 
     @staticmethod
@@ -465,4 +479,3 @@ class RSRM(BaseEstimator, TransformerMixin):
         v[neg] += gamma
         v[np.logical_and(~pos, ~neg)] = .0
         return v
-
